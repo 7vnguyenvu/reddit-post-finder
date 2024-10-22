@@ -111,7 +111,8 @@ async function downCSV(posts) {
     }
 
     // Tạo nội dung CSV
-    let csvContent = "#,URL,SEARCH_KEY_TITLE,MORE\n";
+    let csvContent = `KEY:,${input.value}\n`;
+    csvContent += "#,URL,SEARCH_KEY_TITLE,MORE\n";
     posts.forEach((post, index) => {
         csvContent += `${index + 1},"${post}","${post.split("/comments")[1]}"\r\n`;
     });
