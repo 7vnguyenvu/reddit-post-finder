@@ -31,6 +31,13 @@ startBtn.addEventListener("click", async () => {
     // Flow
     // await fillInput("faceplate-search-input", input.value, activeTab);
     const amount = $("get-amount").value;
+    await chrome.scripting.executeScript({
+        target: { tabId: activeTab.id },
+        func: () => {
+            window.isPaused = false;
+        },
+    });
+
     input.value = await getKeyInSearch(activeTab);
     const scroll = await autoScroll(activeTab, amount);
     if (scroll) {
@@ -161,17 +168,19 @@ async function autoScroll(activeTab, amount, delay = 1) {
                     };
 
                     // Cuộn liên tục với khoảng thời gian delay
-                    const scrollInterval = setInterval(() => {
+                    const scrollInterval = setInterval(async () => {
                         if (window.isPaused) {
                             console.log("Stopped!!");
                             clearInterval(scrollInterval); // Tạm dừng cuộn
                             innerResolve(true); // Resolve khi scroll kết thúc
                         }
                         window.scrollBy(0, 100);
+
+                        await checkPosts(); // Kiểm tra số lượng bài viết
                     }, delay);
 
                     // Bắt sự kiện scroll và kiểm tra khi đến cuối trang
-                    window.addEventListener("scroll", async () => {
+                    window.addEventListener("scroll", () => {
                         if (window.isPaused) return;
 
                         const currentScrollPosition = window.scrollY + window.innerHeight;
@@ -185,8 +194,6 @@ async function autoScroll(activeTab, amount, delay = 1) {
                             if (window.currentTimeout) {
                                 clearTimeout(window.currentTimeout);
                             }
-
-                            await checkPosts(); // Kiểm tra số lượng bài viết
 
                             // Lưu reference của timeout mới
                             window.currentTimeout = setTimeout(() => {
