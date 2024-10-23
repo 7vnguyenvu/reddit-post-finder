@@ -118,10 +118,12 @@ async function downCSV(posts) {
     }
 
     // Tạo nội dung CSV
-    let csvContent = `KEY:,${input.value}\n`;
+    let csvContent = `\uFEFFKEY:,${input.value}\n`; // Thêm BOM (Byte Order Mark) để báo UTF-8
     csvContent += "#,URL,SEARCH_KEY_TITLE,MORE\n";
+
     posts.forEach((post, index) => {
-        csvContent += `${index + 1},"${post}","${post.split("/comments")[1]}"\r\n`;
+        const searchKey = post.split("/comments")[1] || ""; // Lấy phần search key từ URL
+        csvContent += `\uFEFF${index + 1},"${post}","${searchKey}"\r\n`; // Giữ nguyên URL tiếng Việt
     });
 
     // Tạo blob và download
@@ -129,7 +131,7 @@ async function downCSV(posts) {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `[reddit_posts]_${posts.length}__${encodeURI(input.value).replace("%20", "+")}.csv`);
+    link.setAttribute("download", `[${posts.length}.rd.posts] ${input.value}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -227,10 +229,21 @@ async function getRedditPosts(activeTab) {
     const result = await chrome.scripting.executeScript({
         target: { tabId: activeTab.id },
         func: () => {
+            const domain = "https://www.reddit.com";
             // Tìm tất cả các thẻ <a>
-            return Array.from(document.querySelectorAll('a[data-testid="post-title"]'))
-                .map((link) => link.href)
+            const arr = Array.from(document.querySelectorAll('a[data-testid="post-title"]'))
+                .map((link) => {
+                    let url = link.getAttribute("href"); // Lấy href nguyên văn
+                    if (url.includes(domain)) {
+                        return url;
+                    } else {
+                        url = domain + url;
+                    }
+
+                    return url;
+                })
                 .filter((href) => href.includes("/comments/")); // Lọc ra các link có dạng "/comments/"
+            return arr;
         },
     });
 
