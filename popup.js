@@ -139,7 +139,7 @@ async function downCSV(posts) {
 
     // Tạo nội dung CSV
     let csvContent = `\uFEFFKEY:,${input.value}\n`; // Thêm BOM (Byte Order Mark) để báo UTF-8
-    csvContent += "#,URL,SEARCH_KEY_TITLE,MORE\n";
+    csvContent += "#,URL,SEARCH_ID,MORE\n";
 
     posts.forEach((post, index) => {
         const searchKey = post.split("/comments")[1] || ""; // Lấy phần search key từ URL
