@@ -1,5 +1,6 @@
 const $ = (id) => document.getElementById(id);
 const input = $("input-key-word");
+const detailFocus = $("detailFocus");
 const startBtn = $("start-get-urls");
 const pauseBtn = $("pause-get-urls");
 const resumeBtn = $("resume-get-urls");
@@ -18,10 +19,26 @@ resetBtn();
 
 let posts = [];
 
+function getQueryParams(url) {
+    let params = {};
+    let parser = new URL(url);
+    for (let param of parser.searchParams.entries()) {
+        params[param[0]] = param[1];
+    }
+    return params;
+}
+
 // /////////////////////////////////////////////
 startBtn.addEventListener("click", async () => {
     const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
     const activeTab = tabs[0];
+
+    // Kiểm tra xem tab hiện tại có phải là trang Search Posts không
+    const queries = getQueryParams(activeTab.url);
+    if (!activeTab.url.includes("https://www.reddit.com/search/?q=") || (!!queries.type && queries.type !== "posts")) {
+        detailFocus.innerText = "⚠️ This is not a Search Result page!";
+        return;
+    }
 
     // Reset the current index and paused state
     pauseBtn.disabled = false;
@@ -48,6 +65,9 @@ startBtn.addEventListener("click", async () => {
             downPosts.disabled = false;
             totalUrl.innerText = posts.length;
         }
+
+        detailFocus.innerHTML = `👌 Processing complete <i class="fa-solid fa-circle-check" style="color: #00ff00"></i><br/>
+        Click Download 👇 now`;
     }
 });
 
