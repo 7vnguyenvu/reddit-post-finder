@@ -162,7 +162,6 @@ async function autoScroll(activeTab, amount, delay = 1) {
                         // console.log("Current posts:", posts.length);
 
                         if (posts.length >= amount) {
-                            console.log("Enough quantity to download, stopping scroll");
                             window.isPaused = true;
                             clearTimeout(window.currentTimeout);
                             innerResolve(true); // Resolve khi có đủ số lượng
@@ -172,11 +171,12 @@ async function autoScroll(activeTab, amount, delay = 1) {
                     // Cuộn liên tục với khoảng thời gian delay
                     const scrollInterval = setInterval(async () => {
                         if (window.isPaused) {
-                            console.log("Stopped!!");
+                            console.log("Enough quantity to download, stopping scroll");
                             clearInterval(scrollInterval); // Tạm dừng cuộn
                             innerResolve(true); // Resolve khi scroll kết thúc
+                        } else {
+                            window.scrollBy(0, 100);
                         }
-                        window.scrollBy(0, 100);
 
                         await checkPosts(); // Kiểm tra số lượng bài viết
                     }, delay);
